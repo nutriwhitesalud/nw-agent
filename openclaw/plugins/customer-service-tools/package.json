@@ -1,0 +1,22 @@
+{
+  "name": "@your-company/customer-service-tools",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Typed OpenClaw tools for customer service retrieval and CRM access.",
+  "peerDependencies": {
+    "openclaw": ">=2026.3.24-beta.2"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.0"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    }
+  }
+}
+

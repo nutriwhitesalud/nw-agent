@@ -1,0 +1,2 @@
+"""CRM adapter service."""
+
