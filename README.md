@@ -54,11 +54,22 @@ This scaffold is intentionally conservative:
 - OpenClaw tools are narrow and business-specific.
 - No generic shell, filesystem, browser, or web tools are assumed for customer-facing use.
 
+## Model evaluation
+
+A side-by-side eval harness lives in `eval/` for comparing candidate generation models (Claude Haiku 4.5, Gemini 3 Flash, GPT-5 Mini, etc.) against NutriWhite-specific cases derived from real WhatsApp conversations and the FAQ. See [eval/README.md](eval/README.md).
+
+```bash
+pip install -e ".[eval]"
+export ANTHROPIC_API_KEY=...
+python -m eval.run_eval --models haiku-4.5
+```
+
 ## Recommended next build steps
 
-1. Replace the mock CRM adapter with your real CRM integration.
-2. Replace the shared API key with a stronger service-to-service auth model if needed.
-3. Add observability with Phoenix or Langfuse.
-4. Build a gold evaluation set and run Ragas before production rollout.
+1. Run the eval harness and pick the production model from data, not vibes.
+2. Replace the mock CRM adapter with the real Zoho CRM integration (Contacts, Comunidad NW, Tratos, Consultas, Examenes).
+3. Replace the shared API key with a stronger service-to-service auth model if needed.
+4. Add observability with Langfuse (self-hosted alongside Compose).
+5. Wire DigitalOcean Managed Postgres (with pgvector) for production.
 
 See [docs/architecture.md](/C:/Users/LANZ/nw-agent/docs/architecture.md) and [docs/openclaw-setup.md](/C:/Users/LANZ/nw-agent/docs/openclaw-setup.md) for the operational plan.

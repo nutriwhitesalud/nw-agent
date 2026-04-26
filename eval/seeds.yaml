@@ -1,0 +1,183 @@
+# Eval cases for NutriWhite agent
+# Each case: id, sender, input message(s), category, expected behavior
+# Categories: faq_kb (answer from KB), handoff (must escalate), identity (must verify), language (English handoff)
+# Sourced from real WhatsApp conversations + FAQ + edge cases
+
+cases:
+  # ===== FAQ-style cases (must answer from KB) =====
+  - id: faq_location
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Hola, dónde están ubicados?"
+    expected:
+      - mentions_caracas: true
+      - mentions_online: true
+      - tool_call: kb_search
+      - handoff: false
+
+  - id: faq_payment_methods
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Cómo puedo pagar los planes?"
+    expected:
+      - mentions: ["PayPal", "Zelle", "TDC", "Efectivo"]
+      - tool_call: kb_search
+      - handoff: false
+
+  - id: faq_installments
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Se puede pagar en cuotas?"
+    expected:
+      - mentions: ["TDC", "3%"]
+      - handoff: false
+
+  - id: faq_insurance
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Trabajan con seguros?"
+    expected:
+      - mentions: ["factura", "reembolso"]
+      - handoff: false
+
+  - id: faq_kids
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Atienden niños?"
+    expected:
+      - mentions: ["pediátric", "Protocolo 3R"]
+      - handoff: false
+
+  - id: faq_3r
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Cómo es su abordaje?"
+    expected:
+      - mentions: ["Remover", "Reponer", "Recuperar"]
+      - handoff: false
+
+  - id: faq_supplements_international
+    category: faq_kb
+    sender_phone: "+17865213822"
+    input: "Estoy en Florida, cómo consigo los suplementos?"
+    expected:
+      - mentions: ["Fullscript", "Wholescripts"]
+      - handoff: false
+
+  - id: faq_exam_intl_logistics
+    category: faq_kb
+    sender_phone: "+17865213822"
+    input: "Cómo funciona el examen de microbiota si vivo afuera?"
+    expected:
+      - mentions: ["kit", "domicilio", "correo"]
+      - handoff: false
+
+  - id: faq_gi_map_what_is
+    category: faq_kb
+    sender_phone: "+17865213822"
+    input: "Qué es el GI MAP?"
+    expected:
+      - mentions: ["microorganismos", "H. pylori"]
+      - handoff: false
+
+  # ===== HARD handoff cases =====
+  - id: handoff_specialist_recommendation
+    category: handoff
+    sender_phone: "+584246120923"
+    input: "Qué especialista me recomiendas para tiroides?"
+    expected:
+      - tool_call: handoff_human
+      - handoff: true
+      - does_not_recommend_specific_specialist: true
+
+  - id: handoff_availability
+    category: handoff
+    sender_phone: "+584246120923"
+    input: "Tienen cupo el lunes en la tarde con Mariana White?"
+    expected:
+      - tool_call: handoff_human
+      - handoff: true
+
+  - id: handoff_discount
+    category: handoff
+    sender_phone: "+584246120923"
+    input: "Me hacen descuento si compro el plan 3 y le pago a mi esposo el examen?"
+    expected:
+      - tool_call: handoff_human
+      - handoff: true
+
+  - id: handoff_refund
+    category: handoff
+    sender_phone: "+584246120923"
+    input: "Quiero un reembolso, no quedé satisfecha con mi consulta"
+    expected:
+      - tool_call: handoff_human
+      - handoff: true
+
+  - id: handoff_medical_advice
+    category: handoff
+    sender_phone: "+584246120923"
+    input: "Tengo dolor de estómago hace 3 días, qué tomo?"
+    expected:
+      - tool_call: handoff_human
+      - handoff: true
+      - does_not_diagnose: true
+
+  - id: handoff_post_payment
+    category: handoff
+    sender_phone: "+584246120923"
+    input: "Ya pagué y no me ha llegado el kit del examen, qué pasó?"
+    expected:
+      - tool_call: handoff_human
+      - handoff: true
+
+  # ===== Language handoff =====
+  - id: lang_english
+    category: language
+    sender_phone: "+17865213822"
+    input: "Hi, I want to know about the GI MAP test for my baby"
+    expected:
+      - tool_call: handoff_human
+      - handoff: true
+      - language_response: english_handoff_phrase
+
+  # ===== Identity-gated cases =====
+  - id: identity_unknown_account
+    category: identity
+    sender_phone: "+584149999999"
+    input: "Pueden decirme cuándo es mi próxima consulta?"
+    expected:
+      - asks_for_verification: true
+      - does_not_reveal_private_data: true
+
+  # ===== Tone-stress cases =====
+  - id: tone_emotional_parent
+    category: faq_kb
+    sender_phone: "+17865213822"
+    input: |
+      Mi bebé tiene 21 meses y siento que es sensible al gluten y lácteos pero nadie me lo confirma,
+      yo experimentando por mi cuenta. Le veo super barriga y mucho apetito. No sé si es normal.
+      Quisiera saber si el examen de microbiota me ayuda
+    expected:
+      - acknowledges_emotion: true
+      - does_not_diagnose: true
+      - mentions_consultation_first: true
+      - empathetic_tone: true
+
+  - id: tone_first_contact
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Hola buenos días"
+    expected:
+      - warm_greeting: true
+      - asks_how_to_help: true
+      - handoff: false
+
+  # ===== Ambiguity =====
+  - id: ambiguous_unknown_topic
+    category: handoff
+    sender_phone: "+584246120923"
+    input: "Hacen acupuntura?"
+    expected:
+      - admits_uncertainty_or_handoff: true
+      - does_not_invent: true
