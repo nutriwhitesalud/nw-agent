@@ -9,6 +9,26 @@ class CrmSettings(BaseSettings):
 
     app_name: str = "crm-adapter"
     internal_api_key: str = Field(alias="INTERNAL_API_KEY")
+
+    # Provider: "mock" | "zoho"
     crm_provider: str = Field(default="mock", alias="CRM_PROVIDER")
-    crm_base_url: str | None = Field(default=None, alias="CRM_BASE_URL")
-    crm_api_key: str | None = Field(default=None, alias="CRM_API_KEY")
+
+    # Zoho OAuth (Self Client / Server-based)
+    zoho_client_id: str | None = Field(default=None, alias="ZOHO_CLIENT_ID")
+    zoho_client_secret: str | None = Field(default=None, alias="ZOHO_CLIENT_SECRET")
+    zoho_refresh_token: str | None = Field(default=None, alias="ZOHO_REFRESH_TOKEN")
+
+    # DC: com | eu | in | com.au | jp | ca
+    zoho_dc: str = Field(default="com", alias="ZOHO_DC")
+
+    # Set to true to hit sandbox.zohoapis.com instead of www.zohoapis.com
+    zoho_sandbox: bool = Field(default=False, alias="ZOHO_SANDBOX")
+
+    @property
+    def zoho_accounts_url(self) -> str:
+        return f"https://accounts.zoho.{self.zoho_dc}"
+
+    @property
+    def zoho_api_base(self) -> str:
+        host = "sandbox.zohoapis" if self.zoho_sandbox else "www.zohoapis"
+        return f"https://{host}.{self.zoho_dc}/crm/v8"

@@ -41,12 +41,13 @@ function asText(value) {
 export default definePluginEntry({
   id: "customer-service-tools",
   name: "Customer Service Tools",
-  description: "Typed tools for knowledge retrieval and CRM-backed support workflows.",
+  description: "NutriWhite tools for knowledge retrieval and Zoho-backed patient workflows.",
   register(api) {
+    // ── Knowledge retrieval ──────────────────────────────────────────────────
     api.registerTool(
       {
         name: "kb_search",
-        description: "Retrieve approved company knowledge with citations.",
+        description: "Buscar en la base de conocimiento aprobada de NutriWhite con citas.",
         parameters: Type.Object({
           query: Type.String({ minLength: 3 }),
           top_k: Type.Optional(Type.Integer({ minimum: 1, maximum: 10 })),
@@ -68,18 +69,23 @@ export default definePluginEntry({
       { optional: true },
     );
 
+    // ── Patient lookup ───────────────────────────────────────────────────────
     api.registerTool(
       {
         name: "customer_lookup",
-        description: "Look up a customer profile by id or email.",
+        description:
+          "Buscar paciente por número de WhatsApp (preferido), email, o ID de Zoho. " +
+          "El número debe coincidir con el remitente del mensaje.",
         parameters: Type.Object({
-          customer_id: Type.Optional(Type.String()),
+          phone: Type.Optional(Type.String({ description: "Formato E.164: +584145610594" })),
           email: Type.Optional(Type.String()),
+          customer_id: Type.Optional(Type.String({ description: "Zoho Contact id" })),
         }),
         async execute(_id, params) {
           const result = await postJson(crmAdapterUrl, "/v1/customer/profile", {
-            customer_id: params.customer_id ?? null,
+            phone: params.phone ?? null,
             email: params.email ?? null,
+            customer_id: params.customer_id ?? null,
           });
           return asText(result);
         },
@@ -87,10 +93,11 @@ export default definePluginEntry({
       { optional: true },
     );
 
+    // ── Deals / Plans (Tratos) ────────────────────────────────────────────────
     api.registerTool(
       {
         name: "customer_orders",
-        description: "Retrieve recent orders for a known customer.",
+        description: "Listar planes activos del paciente (Tratos en Zoho).",
         parameters: Type.Object({
           customer_id: Type.String(),
         }),
@@ -102,10 +109,11 @@ export default definePluginEntry({
       { optional: true },
     );
 
+    // ── Consultas ─────────────────────────────────────────────────────────────
     api.registerTool(
       {
         name: "customer_tickets",
-        description: "Retrieve recent support tickets for a known customer.",
+        description: "Listar consultas programadas y vistas del paciente.",
         parameters: Type.Object({
           customer_id: Type.String(),
         }),
@@ -119,8 +127,41 @@ export default definePluginEntry({
 
     api.registerTool(
       {
+        name: "customer_consultas",
+        description: "Alias claro de customer_tickets — consultas del paciente.",
+        parameters: Type.Object({
+          customer_id: Type.String(),
+        }),
+        async execute(_id, params) {
+          const result = await postJson(crmAdapterUrl, "/v1/customer/consultas", params);
+          return asText(result);
+        },
+      },
+      { optional: true },
+    );
+
+    // ── Exámenes ──────────────────────────────────────────────────────────────
+    api.registerTool(
+      {
+        name: "customer_examenes",
+        description: "Listar exámenes del paciente con su estatus de proceso.",
+        parameters: Type.Object({
+          customer_id: Type.String(),
+        }),
+        async execute(_id, params) {
+          const result = await postJson(crmAdapterUrl, "/v1/customer/examenes", params);
+          return asText(result);
+        },
+      },
+      { optional: true },
+    );
+
+    // ── Note draft for human review ──────────────────────────────────────────
+    api.registerTool(
+      {
         name: "ticket_create_draft",
-        description: "Create a support ticket draft for later human review or submission.",
+        description:
+          "Crear una nota en el contacto de Zoho para revisión humana. Útil para resumir el caso antes de un handoff.",
         parameters: Type.Object({
           customer_id: Type.String(),
           summary: Type.String({ minLength: 5 }),
@@ -145,10 +186,12 @@ export default definePluginEntry({
       { optional: true },
     );
 
+    // ── Handoff ───────────────────────────────────────────────────────────────
     api.registerTool(
       {
         name: "handoff_human",
-        description: "Queue a conversation for human support handoff.",
+        description:
+          "Escalar la conversación a una asesora humana. Crea una nota en el contacto de Zoho con el motivo y prioridad.",
         parameters: Type.Object({
           conversation_id: Type.String(),
           reason: Type.String({ minLength: 10 }),
