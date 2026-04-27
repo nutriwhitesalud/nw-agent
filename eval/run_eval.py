@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -21,6 +22,40 @@ import yaml
 
 EVAL_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = EVAL_DIR / "results"
+
+# Force UTF-8 stdout for Windows consoles
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+
+
+def _load_env_file() -> None:
+    """
+    Load .env into os.environ.
+    Overwrites empty/unset values; preserves explicitly-set non-empty ones.
+    """
+    candidates = [
+        Path(os.environ.get("NW_AGENT_ENV") or ""),
+        Path(r"C:\Users\LANZ\nw-agent\.env"),
+        Path(".env"),
+        EVAL_DIR.parent.parent.parent.parent / ".env",
+    ]
+    for path in candidates:
+        if path and path.is_file():
+            for raw in path.read_text(encoding="utf-8").splitlines():
+                line = raw.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, _, v = line.partition("=")
+                k = k.strip()
+                v = v.strip().strip('"').strip("'")
+                # Only set if currently missing OR empty (so explicit
+                # non-empty system env always wins).
+                if not os.environ.get(k):
+                    os.environ[k] = v
+            return
+
+
+_load_env_file()
 
 
 @dataclass(slots=True)
@@ -91,11 +126,15 @@ def call_openai(model: str, system: str, user: str) -> str:
 
 
 def call_gemini(model: str, system: str, user: str) -> str:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types
 
-    genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-    gen_model = genai.GenerativeModel(model_name=model, system_instruction=system)
-    response = gen_model.generate_content(user)
+    client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+    response = client.models.generate_content(
+        model=model,
+        contents=user,
+        config=types.GenerateContentConfig(system_instruction=system),
+    )
     return response.text or ""
 
 
