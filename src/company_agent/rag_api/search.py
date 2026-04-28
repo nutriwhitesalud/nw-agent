@@ -22,8 +22,8 @@ SELECT
 FROM knowledge_chunks
 WHERE search_tsv @@ websearch_to_tsquery('simple', %(query)s)
   AND corpus = %(corpus)s
-  AND (%(product)s IS NULL OR metadata->>'product' = %(product)s)
-  AND (%(language)s IS NULL OR metadata->>'language' = %(language)s)
+  AND (%(product)s::text IS NULL OR metadata->>'product' = %(product)s::text)
+  AND (%(language)s::text IS NULL OR metadata->>'language' = %(language)s::text)
 ORDER BY score DESC
 LIMIT %(limit)s
 """
@@ -41,8 +41,8 @@ SELECT
 FROM knowledge_chunks
 WHERE embedding IS NOT NULL
   AND corpus = %(corpus)s
-  AND (%(product)s IS NULL OR metadata->>'product' = %(product)s)
-  AND (%(language)s IS NULL OR metadata->>'language' = %(language)s)
+  AND (%(product)s::text IS NULL OR metadata->>'product' = %(product)s::text)
+  AND (%(language)s::text IS NULL OR metadata->>'language' = %(language)s::text)
 ORDER BY embedding <=> %(embedding)s::vector
 LIMIT %(limit)s
 """
