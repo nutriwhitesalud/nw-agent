@@ -1,5 +1,5 @@
 ---
-name: customer_service_policy
+name: customer-service-policy
 description: NutriWhite customer service policy — Liliana persona, Spanish-first WhatsApp agent with strict handoff rules and immunonutrition knowledge.
 ---
 
