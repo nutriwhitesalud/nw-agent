@@ -85,7 +85,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
 
     // ── Patient lookup ───────────────────────────────────────────────────────
@@ -109,7 +108,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
 
     // ── Deals / Plans (Tratos) ────────────────────────────────────────────────
@@ -125,7 +123,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
 
     // ── Consultas ─────────────────────────────────────────────────────────────
@@ -141,7 +138,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
 
     api.registerTool(
@@ -156,7 +152,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
 
     // ── Exámenes ──────────────────────────────────────────────────────────────
@@ -172,7 +167,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
 
     // ── Note draft for human review ──────────────────────────────────────────
@@ -202,7 +196,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
 
     // ── Handoff ───────────────────────────────────────────────────────────────
@@ -232,7 +225,6 @@ export default definePluginEntry({
           return asText(result);
         },
       },
-      { optional: true },
     );
   },
 });
