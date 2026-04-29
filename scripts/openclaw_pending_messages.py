@@ -20,6 +20,10 @@ class JournalRecord:
     content: str
     raw: dict[str, Any]
 
+    @property
+    def is_command(self) -> bool:
+        return self.content.strip().startswith("/")
+
 
 def parse_timestamp(value: str | None) -> datetime | None:
     if not value:
@@ -65,14 +69,14 @@ def load_records(path: Path, since: datetime) -> list[JournalRecord]:
     return records
 
 
-def pending_by_peer(records: list[JournalRecord]) -> list[JournalRecord]:
+def pending_by_peer(records: list[JournalRecord], include_commands: bool = False) -> list[JournalRecord]:
     last_sent: dict[str, datetime] = {}
     inbound: list[JournalRecord] = []
 
     for record in sorted(records, key=lambda item: item.received_at):
         if record.type == "sent":
             last_sent[record.peer] = record.received_at
-        elif record.type == "received":
+        elif record.type == "received" and (include_commands or not record.is_command):
             inbound.append(record)
 
     pending: list[JournalRecord] = []
@@ -90,12 +94,14 @@ def main() -> int:
     parser.add_argument("--minutes", type=int, default=3)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--fail-on-pending", action="store_true")
+    parser.add_argument("--include-commands", action="store_true", help="Include slash commands like /new.")
+    parser.add_argument("--show-events", action="store_true", help="Include raw matching events in JSON output.")
     args = parser.parse_args()
 
     now = datetime.now(UTC)
     since = now - timedelta(minutes=args.minutes)
     records = load_records(args.journal, since)
-    pending = pending_by_peer(records)
+    pending = pending_by_peer(records, include_commands=args.include_commands)
 
     if args.json:
         print(
@@ -103,6 +109,7 @@ def main() -> int:
                 {
                     "journal": str(args.journal),
                     "window_minutes": args.minutes,
+                    "event_count": len(records),
                     "pending_count": len(pending),
                     "pending": [
                         {
@@ -114,6 +121,23 @@ def main() -> int:
                         }
                         for item in pending
                     ],
+                    **(
+                        {
+                            "events": [
+                                {
+                                    "type": item.type,
+                                    "received_at": item.received_at.isoformat(),
+                                    "peer": item.peer,
+                                    "content": item.content,
+                                    "session_key": item.raw.get("session_key"),
+                                    "metadata": item.raw.get("metadata"),
+                                }
+                                for item in records
+                            ]
+                        }
+                        if args.show_events
+                        else {}
+                    ),
                 },
                 ensure_ascii=False,
                 indent=2,
