@@ -2,6 +2,41 @@
   "id": "customer-service-tools",
   "name": "Customer Service Tools",
   "version": "0.1.0",
-  "description": "Narrow business tools for retrieval and CRM-backed customer service workflows."
+  "description": "Narrow business tools for retrieval and CRM-backed customer service workflows.",
+  "contracts": {
+    "tools": [
+      "kb_search",
+      "customer_lookup",
+      "customer_orders",
+      "customer_consultas",
+      "customer_examenes",
+      "ticket_create_draft",
+      "handoff_human"
+    ]
+  },
+  "uiHints": {
+    "internalApiKey": {
+      "label": "Internal API key",
+      "sensitive": true
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "ragApiUrl": {
+        "type": "string",
+        "default": "http://127.0.0.1:8081"
+      },
+      "crmAdapterUrl": {
+        "type": "string",
+        "default": "http://127.0.0.1:8082"
+      },
+      "internalApiKey": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": ["internalApiKey"]
+  }
 }
-

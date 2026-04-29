@@ -1,13 +1,30 @@
 import { Type } from "@sinclair/typebox";
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 
-const ragApiUrl = process.env.RAG_API_URL || "http://127.0.0.1:8081";
-const crmAdapterUrl = process.env.CRM_ADAPTER_URL || "http://127.0.0.1:8082";
-const internalApiKey = process.env.INTERNAL_API_KEY || "";
+const DEFAULT_RAG_API_URL = "http://127.0.0.1:8081";
+const DEFAULT_CRM_ADAPTER_URL = "http://127.0.0.1:8082";
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 
-async function postJson(baseUrl, path, payload) {
+function localHttpBaseUrl(value, fieldName) {
+  const url = new URL(value);
+  if (url.protocol !== "http:" || !LOOPBACK_HOSTS.has(url.hostname)) {
+    throw new Error(`${fieldName} must be a loopback http URL.`);
+  }
+  return url.origin;
+}
+
+function pluginConfig(api) {
+  const config = api.pluginConfig ?? {};
+  return {
+    ragApiUrl: localHttpBaseUrl(config.ragApiUrl ?? DEFAULT_RAG_API_URL, "ragApiUrl"),
+    crmAdapterUrl: localHttpBaseUrl(config.crmAdapterUrl ?? DEFAULT_CRM_ADAPTER_URL, "crmAdapterUrl"),
+    internalApiKey: config.internalApiKey ?? "",
+  };
+}
+
+async function postJson(baseUrl, internalApiKey, path, payload) {
   if (!internalApiKey) {
-    throw new Error("INTERNAL_API_KEY is not set for the customer-service-tools plugin.");
+    throw new Error("internalApiKey is not set for the customer-service-tools plugin.");
   }
 
   const response = await fetch(`${baseUrl}${path}`, {
@@ -43,6 +60,8 @@ export default definePluginEntry({
   name: "Customer Service Tools",
   description: "NutriWhite tools for knowledge retrieval and Zoho-backed patient workflows.",
   register(api) {
+    const { ragApiUrl, crmAdapterUrl, internalApiKey } = pluginConfig(api);
+
     // ── Knowledge retrieval ──────────────────────────────────────────────────
     api.registerTool(
       {
@@ -56,7 +75,7 @@ export default definePluginEntry({
           language: Type.Optional(Type.String()),
         }),
         async execute(_id, params) {
-          const result = await postJson(ragApiUrl, "/v1/retrieve", {
+          const result = await postJson(ragApiUrl, internalApiKey, "/v1/retrieve", {
             query: params.query,
             top_k: params.top_k ?? 5,
             corpus: params.corpus ?? "default",
@@ -82,7 +101,7 @@ export default definePluginEntry({
           customer_id: Type.Optional(Type.String({ description: "Zoho Contact id" })),
         }),
         async execute(_id, params) {
-          const result = await postJson(crmAdapterUrl, "/v1/customer/profile", {
+          const result = await postJson(crmAdapterUrl, internalApiKey, "/v1/customer/profile", {
             phone: params.phone ?? null,
             email: params.email ?? null,
             customer_id: params.customer_id ?? null,
@@ -102,7 +121,7 @@ export default definePluginEntry({
           customer_id: Type.String(),
         }),
         async execute(_id, params) {
-          const result = await postJson(crmAdapterUrl, "/v1/customer/orders", params);
+          const result = await postJson(crmAdapterUrl, internalApiKey, "/v1/customer/orders", params);
           return asText(result);
         },
       },
@@ -118,7 +137,7 @@ export default definePluginEntry({
           customer_id: Type.String(),
         }),
         async execute(_id, params) {
-          const result = await postJson(crmAdapterUrl, "/v1/customer/tickets", params);
+          const result = await postJson(crmAdapterUrl, internalApiKey, "/v1/customer/tickets", params);
           return asText(result);
         },
       },
@@ -133,7 +152,7 @@ export default definePluginEntry({
           customer_id: Type.String(),
         }),
         async execute(_id, params) {
-          const result = await postJson(crmAdapterUrl, "/v1/customer/consultas", params);
+          const result = await postJson(crmAdapterUrl, internalApiKey, "/v1/customer/consultas", params);
           return asText(result);
         },
       },
@@ -149,7 +168,7 @@ export default definePluginEntry({
           customer_id: Type.String(),
         }),
         async execute(_id, params) {
-          const result = await postJson(crmAdapterUrl, "/v1/customer/examenes", params);
+          const result = await postJson(crmAdapterUrl, internalApiKey, "/v1/customer/examenes", params);
           return asText(result);
         },
       },
@@ -176,7 +195,7 @@ export default definePluginEntry({
           ),
         }),
         async execute(_id, params) {
-          const result = await postJson(crmAdapterUrl, "/v1/tickets/draft", {
+          const result = await postJson(crmAdapterUrl, internalApiKey, "/v1/tickets/draft", {
             ...params,
             priority: params.priority ?? "normal",
           });
@@ -206,7 +225,7 @@ export default definePluginEntry({
           ),
         }),
         async execute(_id, params) {
-          const result = await postJson(crmAdapterUrl, "/v1/handoff", {
+          const result = await postJson(crmAdapterUrl, internalApiKey, "/v1/handoff", {
             ...params,
             priority: params.priority ?? "high",
           });
