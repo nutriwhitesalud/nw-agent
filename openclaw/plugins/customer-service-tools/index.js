@@ -135,12 +135,12 @@ export default definePluginEntry({
       {
         name: "faq_consultation_plans",
         description:
-          "Usa esta herramienta para responder que planes de consulta hay disponibles, precios de planes, costo de planes o informacion comercial general de planes.",
+          "Usa esta herramienta para responder que planes de consulta hay disponibles, precios de planes, costo de planes, que incluye cada plan, detalles de Plan 1/Plan 3/Plan 5 o informacion comercial general de planes. No uses customer_lookup para informacion publica de planes.",
         parameters: Type.Object({}),
         async execute() {
           return faqAnswer(
             "planes_consulta",
-            "Planes disponibles: Plan 1 Consulta (Basico): $229 USD, duracion 1 mes, 1 consulta de 90 minutos. Plan 3 Consultas (Mas Recomendado): $559 USD, duracion 3 meses, 3 consultas/seguimientos. Plan 5 Consultas (Premium): $789 USD, duracion 5 meses, 5 consultas/seguimientos. No calcules cuotas ni comisiones; si preguntan por cuotas, indica que son solo con TDC y se agrega 3% de comision bancaria.",
+            "Planes disponibles: Plan 1 Consulta (Basico): $229 USD, duracion 1 mes, 1 consulta de 90 minutos. Incluye evaluacion clinico/nutricional, informe con plan de accion, plan de alimentacion general, guia del Protocolo 3R, recomendacion de examenes especializados y recomendacion de suplementos. Plan 3 Consultas (Mas Recomendado): $559 USD, duracion 3 meses, 3 consultas/seguimientos. Incluye todo lo del Plan 1, mas acompanamiento de dos embajadoras, plan nutricional personalizado, emails semanales, coleccion de 20+ recetas, 1 curso de la Academia, grupo de soporte por WhatsApp, entrega de menu, material de consulta y lista de productos. Estructura: primera cita de 90 min, control 10-15 dias despues, segunda consulta de 90 min. Plan 5 Consultas (Premium): $789 USD, duracion 5 meses, 5 consultas/seguimientos. Incluye todo lo del Plan 3, mas bootcamp de 10 dias, acceso a todos los cursos de la Academia, acceso a webinars y descuentos en eventos. Los planes incluyen recomendacion de examenes; no digas que los examenes estan incluidos en el precio. No calcules cuotas ni comisiones; si preguntan por cuotas, indica que son solo con TDC y se agrega 3% de comision bancaria.",
             "knowledge/raw/02_consultation_plans.md",
           );
         },

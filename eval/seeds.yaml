@@ -111,6 +111,17 @@ cases:
       - does_not_ask_clarifying_question: true
       - handoff: false
 
+  - id: faq_plan3_includes_no_profile_lookup
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Dame mas informacion acerca del Plan 3. Que incluye?"
+    expected:
+      - tool_call: faq_consultation_plans
+      - mentions: ["$559", "3 meses", "dos embajadoras", "20+ recetas", "WhatsApp"]
+      - does_not_call: customer_lookup
+      - does_not_mention: ["perfil", "cuenta", "exámenes incluidos"]
+      - handoff: false
+
   # ===== HARD handoff cases =====
   - id: handoff_specialist_recommendation
     category: handoff
