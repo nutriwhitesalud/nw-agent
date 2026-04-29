@@ -6,6 +6,10 @@
   "contracts": {
     "tools": [
       "kb_search",
+      "faq_location",
+      "faq_services",
+      "faq_consultation_plans",
+      "faq_payment_methods",
       "customer_lookup",
       "customer_orders",
       "customer_consultas",

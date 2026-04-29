@@ -55,6 +55,16 @@ function asText(value) {
   };
 }
 
+function faqAnswer(topic, answer, sourceUri) {
+  return asText({
+    topic,
+    source_uri: sourceUri,
+    answer,
+    instruction:
+      "Responde en español usando solo este contenido. No digas que vas a buscar. No escales si la pregunta coincide con este tema.",
+  });
+}
+
 export default definePluginEntry({
   id: "customer-service-tools",
   name: "Customer Service Tools",
@@ -85,6 +95,70 @@ export default definePluginEntry({
             language: params.language ?? null,
           });
           return asText(result);
+        },
+      },
+    );
+
+    api.registerTool(
+      {
+        name: "faq_location",
+        description:
+          "Usa esta herramienta para responder de forma directa cuando pregunten donde esta NutriWhite, ubicacion, sede o direccion.",
+        parameters: Type.Object({}),
+        async execute() {
+          return faqAnswer(
+            "ubicacion",
+            "NutriWhite esta en Caracas, Venezuela, en Alta Florida, Avenida Los Mangos, Centro Deportivo Caracas MultiSport, Piso 1. Tambien ofrecemos consultas online para pacientes desde cualquier lugar.",
+            "knowledge/raw/01_company_overview.md",
+          );
+        },
+      },
+    );
+
+    api.registerTool(
+      {
+        name: "faq_services",
+        description:
+          "Usa esta herramienta para responder que ofrece NutriWhite, que productos/servicios tiene, o que puede comprar un paciente.",
+        parameters: Type.Object({}),
+        async execute() {
+          return faqAnswer(
+            "servicios",
+            "NutriWhite ofrece consultas de Inmunonutricion, consultas de nutricion, examenes especializados, suplementos especificos coordinados segun la ubicacion del paciente, evaluacion gratuita de salud, llamada gratuita de 15 minutos y acompanamiento con el Protocolo 3R. Para suplementos, fuera de Venezuela se trabaja con Fullscript y Wholescripts; en Venezuela coordina el equipo de logistica interna.",
+            "knowledge/raw/01_company_overview.md; knowledge/raw/04_supplements.md",
+          );
+        },
+      },
+    );
+
+    api.registerTool(
+      {
+        name: "faq_consultation_plans",
+        description:
+          "Usa esta herramienta para responder que planes de consulta hay disponibles, precios de planes, costo de planes o informacion comercial general de planes.",
+        parameters: Type.Object({}),
+        async execute() {
+          return faqAnswer(
+            "planes_consulta",
+            "Planes disponibles: Plan 1 Consulta (Basico): $229 USD, duracion 1 mes, 1 consulta de 90 minutos. Plan 3 Consultas (Mas Recomendado): $559 USD, duracion 3 meses, 3 consultas/seguimientos. Plan 5 Consultas (Premium): $789 USD, duracion 5 meses, 5 consultas/seguimientos. No calcules cuotas ni comisiones; si preguntan por cuotas, indica que son solo con TDC y se agrega 3% de comision bancaria.",
+            "knowledge/raw/02_consultation_plans.md",
+          );
+        },
+      },
+    );
+
+    api.registerTool(
+      {
+        name: "faq_payment_methods",
+        description:
+          "Usa esta herramienta para metodos de pago, cuotas, TDC, comision, seguro o reembolso.",
+        parameters: Type.Object({}),
+        async execute() {
+          return faqAnswer(
+            "pagos",
+            "Metodos de pago: PayPal, Zelle, Tarjeta de Credito (TDC), Efectivo y Pago movil en Venezuela. Las cuotas estan disponibles unicamente con TDC y se agrega 3% de comision bancaria. NutriWhite no trabaja directamente con seguros, pero puede emitir factura para que el paciente gestione reembolso con su corredor si su seguro cubre nutricion.",
+            "knowledge/raw/02_consultation_plans.md; knowledge/raw/06_faq.md",
+          );
         },
       },
     );
