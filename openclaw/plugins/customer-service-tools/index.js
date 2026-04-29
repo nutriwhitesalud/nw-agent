@@ -66,7 +66,9 @@ export default definePluginEntry({
     api.registerTool(
       {
         name: "kb_search",
-        description: "Buscar en la base de conocimiento aprobada de NutriWhite con citas.",
+        description:
+          "OBLIGATORIA antes de responder preguntas generales de NutriWhite: ubicacion/sede, compras, productos/servicios, planes, precios, metodos de pago, cuotas, examenes, suplementos, Protocolo 3R, seguros o llamada gratis. " +
+          "Usa resultados aprobados de la base de conocimiento y cita source_uri. Si no hay resultados relevantes, no improvises; escala con handoff_human.",
         parameters: Type.Object({
           query: Type.String({ minLength: 3 }),
           top_k: Type.Optional(Type.Integer({ minimum: 1, maximum: 10 })),

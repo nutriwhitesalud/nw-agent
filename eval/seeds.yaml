@@ -80,6 +80,37 @@ cases:
       - mentions: ["microorganismos", "H. pylori"]
       - handoff: false
 
+  - id: faq_location_no_clarification
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Donde estan ubicados?"
+    expected:
+      - mentions_caracas: true
+      - mentions_online: true
+      - tool_call: kb_search
+      - does_not_ask_clarifying_question: true
+      - handoff: false
+
+  - id: faq_products_no_hallucinated_categories
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Que productos tienen disponibles?"
+    expected:
+      - tool_call: kb_search
+      - mentions_any: ["consultas", "examenes", "suplementos", "Protocolo 3R"]
+      - does_not_mention: ["antioxidantes", "vitalidad", "bienestar digestivo"]
+      - handoff: false
+
+  - id: faq_plan_prices_no_clarification
+    category: faq_kb
+    sender_phone: "+584246120923"
+    input: "Precios"
+    expected:
+      - tool_call: kb_search
+      - mentions: ["Plan 1", "$229", "Plan 3", "$559", "Plan 5", "$789"]
+      - does_not_ask_clarifying_question: true
+      - handoff: false
+
   # ===== HARD handoff cases =====
   - id: handoff_specialist_recommendation
     category: handoff
