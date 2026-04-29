@@ -23,3 +23,6 @@ coverage/
 
 # Eval outputs
 eval/results/
+
+# Runtime journals / operational state
+runtime/
